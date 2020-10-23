@@ -61,6 +61,9 @@ void setup() {
   Serial.print("Connected, IP address: ");
   Serial.println(WiFi.localIP());
   Serial.println("");
+
+  // Wiping screen before getting subscriber count
+  wipeScreen();
 }
 
 
@@ -134,7 +137,7 @@ void printSubscriberCount(String rawCount) {
       String formattedString = formatSubscriberCount(subscriberCount); // Formatting function
       printRoutine(formattedString); //Display function
     }
-    else{
+    else {
       Serial.println("Same subscriber count - skipping");
     }
   }
@@ -158,6 +161,13 @@ void printRoutine(String stringToPrint) {
   }
 } // While the animation isn't finished
 
+void wipeScreen() {
+  P.displayText(" ", PA_RIGHT, 50, 50, PA_SCROLL_RIGHT);
+  P.displayReset();
+  while (!P.displayAnimate()) {
+    ESP.wdtFeed(); // Feeding the Watchdog to avoid soft reset
+  }
+}
 
 String formatSubscriberCount(long subscriberCount) {
   if (subscriberCount < 1000) {
