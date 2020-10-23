@@ -41,6 +41,11 @@ __*Total BOM : 17.8€ + enclosure*__
         https://arduino.esp8266.com/stable/package_esp8266com_index.json
 
 - Install the ESP8266 boards with the Board Manager
+- Install the following libraries : 
+
+        ArduinoJson // by Benoit Blanchon
+        MD_Parola
+
 - Select NodeMCU 1.0 and keep the default settings
 - Open and upload the sketch to the board
 

@@ -72,7 +72,7 @@ void setup() {
 void loop() {
   if (displayMode == MODE_SUBSCRIBERS) {
     printHandler(getSubscriberCount());
-    delay(refreshMillis);
+    delay(refreshMillis); // To be changed to millis() comparison subroutine
   }
 // TBI : Mode change handler
 }
