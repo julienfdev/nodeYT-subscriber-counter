@@ -1,54 +1,76 @@
 # NodeYT Subscriber Counter
-# TBUPDATED!!!!!!!!!!
+## ESP8266 Version
+A cheap ESP8266 - NodeMCU v3 subscriber counter - CC BY 4.0
 
-A cheap NodeJS and Arduino subscriber counter - CC BY 4.0
+See branch arduino-rpi for the Arduino / Raspberry Pi version (not maintained)
 
 ## Overview
 
-The Node YT Subscriber Counter is a small and cheap LED Matrix YouTube counter based on a Raspberry Pi 3A+, an Arduino Nano and a 8x32 MAX7219 LED Matrix.
+The Node YT Subscriber Counter is a small and cheap LED Matrix YouTube counter based on a nodeMCU board (ESP8266) and a 8x32 MAX7219 LED Matrix.
 As the name suggests... it counts YouTube subscribers
 
  ## Bill Of Material
 
 ### Mandatory
- - Raspberry Pi 3A+ - __24.37€__ https://amzn.to/2IB41uH
- - Arduino Nano (cheap clone is fine) - __8.99€__ https://amzn.to/3kcQSWT
+ - NodeMCU V3 ESP8266 Developement board - __7.79€__ https://amzn.to/31ySlPQ
  - 8x32 MAX7219 LED Matrix - __9.99€__ https://amzn.to/2HclQzS 
- - Short mini USB cable - __8.34€__ https://amzn.to/31hT2wT
+ - Arduino IDE 1.8+
+
 ### Optional
  - A 3D printer to print the case
 
-### Total BOM : 51.69€ + enclosure
+__*Total BOM : 17.8€ + enclosure*__
 
- ## Arduino (Client-Side)
+## ESP8266 Configuration 
 
- ### WIP
-
- ## Raspberry Pi
-
- ### Configuration : 
-
+### Configuration and Upload
  - Clone the repository
- - Create a config.js file in ./config, file structure as shown :
+ - Create a config.h file in ./esp8266, as following :
 
-        const config = {
-            api: {
-                key: "YOUR_YT_API_KEY",
-                channel: "YOUR_YT_CHANNEL_ID"
-            },
-            serial: {
-                port: '/dev/ttyUSB0' // Most likely, the USB Serial port you program your Arduino with
-            }
-        }
+        String apiKey = "YOUR_YOUTUBE_API_KEY";
+        String channelId = "YOUR_YOUTUBE_CHANNEL_ID";
+        String ssid = "WIFI_SSID_TO_CONNECT_TO";
+        String wifiPass = "WPA||WPA2__KEY";
+        long refreshMillis = ;            // Refresh time in milliseconds
 
-        module.exports = config
+        String apiCall = String("https://www.googleapis.com/youtube/v3/channels?part=statistics&id=" + channelId + "&key=" + apiKey);
 
- - Install the following packages
 
-        sudo apt install nodejs
-        sudo npm install pm2@latest -g
-        cd ./node
+- Open the Arduino IDE and add the following source to the Additionnal Board Manager (Preferences)
 
-- Follow this awesome tutorial, starting at step 3, replacing __hello.js__ by __index.js__ : https://do.co/37oXJsu
+        https://arduino.esp8266.com/stable/package_esp8266com_index.json
 
-# WIP
+- Install the ESP8266 boards with the Board Manager
+- Select NodeMCU 1.0 and keep the default settings
+- Open and upload the sketch to the board
+
+### Remarks / Misc
+
+The ESP8266 opens a Serial at 115200 bauds, it sends various debug data :
+
+- WiFi IP address
+- Start / Response of HTTPS GET requests
+- Current subscriber count or "same sub count" message
+- Errors (to be improved)
+
+Current soft watchdog implemementation assumes the animateDisplay() always eventually sends a true at the end of an animation. 
+
+### WIP
+
+- WiFi connection error handling (currently infinite loop during setup() if not successful)
+- X509 certificate verification instead of client.setInsecure() call
+- Clock display?
+- Mode pushbutton (views-subs-clock)
+- LED intensity potentiometer
+
+## 3D printed case
+
+### Provided Files
+
+The STL and Cura files provided assume a 20x123.5mm fixation pattern for the 8x32 LED Matrix
+
+Disclamer about CATIA files : they are absolute shit as it's a revamp from the RPI+Arduino version.
+
+### Printing
+
+Printing at 200/60°C with Geetech black PLA, 0.24mm layer height, tree support and faceplate ironing yields great results on an Ender3.
