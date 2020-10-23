@@ -24,6 +24,7 @@ MD_Parola P = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
    GLOBAL VARIABLES
 */
 long subscriberCount = 0;
+byte displayMode = MODE_SUBSCRIBERS;
 
 // Creating the JSON Document Placeholder
 const size_t capacity = JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(1) + 2 * JSON_OBJECT_SIZE(4) + JSON_OBJECT_SIZE(5) + 300;
@@ -55,6 +56,7 @@ void setup() {
   {
     delay(500);
     Serial.print(".");
+    wifiErrorHandler();
   }
   Serial.println();
 
@@ -68,20 +70,21 @@ void setup() {
 
 
 void loop() {
-
-  printSubscriberCount(getSubscriberCount());
-  delay(refreshMillis);
-
+  if (displayMode == MODE_SUBSCRIBERS) {
+    printHandler(getSubscriberCount());
+    delay(refreshMillis);
+  }
+// TBI : Mode change handler
 }
 
 String getSubscriberCount() {
   String payload = performApiCall();
-  if (payload == "connx" || payload == "https") {
+  if (payload.startsWith("error-")) {
     return payload;
   }
   else {
-    long subscriberFetch = extractSubscriberString(payload);
-    return String(subscriberFetch);
+    String subscriberFetch = extractSubscriberString(payload);
+    return subscriberFetch;
   }
 }
 
@@ -112,22 +115,31 @@ String performApiCall() {
         String payload = https.getString();
         return payload;
       }
+      else if (httpCode == 400) {
+        Serial.println("Bad Request - Most likely Bad API Key");
+        return "error-APIKey";
+      }
+      else {
+        Serial.printf("[HTTPS] GET... failed, error: %d\n", httpCode);
+        return String("error-err" + String(httpCode));
+      }
     } else {
       Serial.printf("[HTTPS] GET... failed, error: %d\n", httpCode);
-      return "connx";
+      return String("error-err" + String(httpCode));
     }
 
     https.end();
   } else {
     Serial.printf("[HTTPS] Unable to connect\n");
-    return "https";
+    return "error-HTTPS";
   }
 }
 
-void printSubscriberCount(String rawCount) {
-  // Error handling WIP - if connx or https print directly
-  if (rawCount == "connx" || rawCount == "https") {
-    printRoutine(rawCount);
+void printHandler(String rawCount) {
+  // Every payload starting with "error-" will be handled as errors
+  if (rawCount.startsWith("error-")) {
+    String errorCode = rawCount.substring(6);
+    printSubroutine(errorCode);
   }
   else {
     long fetchedSubCountInteger = rawCount.toInt();
@@ -135,7 +147,7 @@ void printSubscriberCount(String rawCount) {
       subscriberCount = fetchedSubCountInteger; // COMMENT FOR DEBUG
       Serial.printf("Subscriber count is : %d\n", fetchedSubCountInteger);
       String formattedString = formatSubscriberCount(subscriberCount); // Formatting function
-      printRoutine(formattedString); //Display function
+      printSubroutine(formattedString); //Display function
     }
     else {
       Serial.println("Same subscriber count - skipping");
@@ -143,17 +155,7 @@ void printSubscriberCount(String rawCount) {
   }
 }
 
-long extractSubscriberString(String payload) {
-  // Breaking down Json into objects
-  deserializeJson(doc, payload);
-  JsonObject items = doc["items"][0];
-  JsonObject stats = items["statistics"];
-  String subscriberCount = stats["subscriberCount"];
-
-  return subscriberCount.toInt();
-}
-
-void printRoutine(String stringToPrint) {
+void printSubroutine(String stringToPrint) {
   P.displayText(stringToPrint.c_str(), PA_RIGHT, 50, 50, PA_SCROLL_RIGHT);
   P.displayReset();
   while (!P.displayAnimate()) {
@@ -209,4 +211,41 @@ String formatSubscriberCount(long subscriberCount) {
     return String(numericPart + "M");
   }
 
+}
+
+String extractSubscriberString(String payload) {
+  // Breaking down Json into objects
+  deserializeJson(doc, payload);
+
+  // Error handling
+  int resultsPerPage = doc["pageInfo"]["resultsPerPage"];
+  if (resultsPerPage == 0) {
+    return "error-channel";
+  }
+  else {
+    JsonObject items = doc["items"][0];
+    JsonObject stats = items["statistics"];
+    String subscriberCount = stats["subscriberCount"];
+
+    return String(subscriberCount);
+  }
+
+}
+
+/*
+   Checks the WiFi connection status and print Error accordingly
+*/
+void wifiErrorHandler() {
+  if (WiFi.status() == WL_NO_SSID_AVAIL) {
+    Serial.println("SSID Unreachable - Sleeping 30s");
+    wipeScreen();
+    printHandler("error-SSID");
+    delay(30000);
+  }
+  else if (WiFi.status() == WL_CONNECT_FAILED) {
+    Serial.println("Wrong WiFi passkey - Sleeping 30s");
+    wipeScreen();
+    printHandler("error-Passwd");
+    delay(30000);
+  }
 }

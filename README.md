@@ -55,9 +55,24 @@ The ESP8266 opens a Serial at 115200 bauds, it sends various debug data :
 
 Current soft watchdog implemementation assumes the animateDisplay() always eventually sends a true at the end of an animation. 
 
+### Errors codes
+
+Even if the serial provides detailed information about what's going on, one would find interesting to quick diagnose any problems. The displays thus prints various error codes depending on the issue : 
+
+__WiFi related error codes__
+
+- SSID : The SSID in config.h can't be reached
+- Passwd : Wrong WPA||WPA2 Passkey
+
+__API Related error codes__
+
+- HTTPS : Can't establish https tunnel (shouldn't happen)
+- APIKey : Bad Request code received from the YT API, most likely related to a bad API Private key
+- err"xxx" : Generic error handler, displays the response code from the server
+- channel : No channel exists with the ID provided in config.h
+
 ### WIP
 
-- WiFi connection error handling (currently infinite loop during setup() if not successful)
 - X509 certificate verification instead of client.setInsecure() call
 - Clock display?
 - Mode pushbutton (views-subs-clock)
