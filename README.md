@@ -1,4 +1,4 @@
-# NodeYT Subscriber Counter
+<<<<<<< Updated upstrea# NodeYT Subscriber Counter
 ## ESP8266 Version
 A cheap ESP8266 - NodeMCU v3 subscriber counter - CC BY 4.0
 
