@@ -18,6 +18,10 @@ As the name suggests... it counts YouTube subscribers
 
 ### Optional
  - A 3D printer to print the case
+ - 8x H5x6mm hex posts
+ - 8x M3x8mm Socket Head Cap Screws
+ - 4x 3.2x5mm Hex or Phillips screws (backplate fixation)
+ - 5x 2.54mm (0.1" in Yankee units) male pin headers
 
 __*Total BOM : 17.8€ + enclosure*__
 
@@ -85,11 +89,19 @@ __API Related error codes__
 
 ## 3D printed case
 
+### Hardware modifications :
+
+A single mod needs to be done to the LED Matrix in order to fit into the RTM case (no mod if you're using the prototype one, but it's not advised as the RTM model is daaaamn slicker).
+
+- Desolder the angled pin headers
+- Solder the straight pin headers back, facing the side without any components (duh)
+
 ### Provided Files
 
 The STL and Cura files provided assume a 20x123.5mm fixation pattern for the 8x32 LED Matrix
 
-Disclamer about CATIA files : they are absolute shit as it's a revamp from the RPI+Arduino version.
+Disclamer about the prototype CATIA files : they are absolute shit as it's a revamp from the RPI+Arduino version.
+RTM should be cleaner ^^
 
 ### Printing
 
