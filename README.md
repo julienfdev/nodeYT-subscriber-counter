@@ -31,6 +31,8 @@ __*Total BOM : 17.8€ + enclosure*__
  - Clone the repository
  - Create a config.h file in ./esp8266, as following :
 
+        #define MODE_SUBSCRIBERS 0
+
         String apiKey = "YOUR_YOUTUBE_API_KEY";
         String channelId = "YOUR_YOUTUBE_CHANNEL_ID";
         String ssid = "WIFI_SSID_TO_CONNECT_TO";
