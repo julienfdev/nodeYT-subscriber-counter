@@ -1,0 +1,5 @@
+node_modules
+.git
+config
+case/native/res
+esp8266/config.h
