@@ -36,6 +36,7 @@ __*Total BOM : 17.8€ + enclosure*__
         String ssid = "WIFI_SSID_TO_CONNECT_TO";
         String wifiPass = "WPA||WPA2__KEY";
         long refreshMillis = ;            // Refresh time in milliseconds
+        int timezone = ; // Your Timezone eg : 1 for GMT+1 and -7 for GMT-7
         const char trustRoot[] PROGMEM = R"EOF(
                 -----BEGIN CERTIFICATE-----
                 THE_GOOGLE_API_CERTIFICATE
@@ -63,6 +64,16 @@ __*Total BOM : 17.8€ + enclosure*__
 
 ### Remarks / Misc
 
+__Boot sequence__
+
+The NodeYT counter go through the following boot sequence : 
+- Prints nodeYT during WiFi connection
+- Synchronizes to NTP servers
+- Prints the current local Time
+- Fetches and print the subscriber count
+
+__Serial debugger__
+
 The ESP8266 opens a Serial at 115200 bauds, it sends various debug data :
 
 - WiFi IP address
@@ -83,10 +94,11 @@ __WiFi related error codes__
 
 __API Related error codes__
 
-- HTTPS : Can't establish https tunnel (verify your X509 certificate)
-- APIKey : Bad Request code received from the YT API, most likely related to a bad API Private key
+- "HTTPS" : Can't establish https tunnel (verify your X509 certificate)
+- "APIKey" : Bad Request code received from the YT API, most likely related to a bad API Private key
+- "channel" : No channel exists with the ID provided in config.h
 - err"xxx" : Generic error handler, displays the response code from the server
-- channel : No channel exists with the ID provided in config.h
+
 
 ### WIP
 
