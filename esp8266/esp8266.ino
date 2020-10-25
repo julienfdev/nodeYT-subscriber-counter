@@ -26,6 +26,9 @@ MD_Parola P = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
 long subscriberCount = 0;
 byte displayMode = MODE_SUBSCRIBERS;
 
+// Creating an X509 Certificate based on the trustRoot signature in config.h
+X509List cert(trustRoot);
+
 // Creating the JSON Document Placeholder
 const size_t capacity = JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(1) + 2 * JSON_OBJECT_SIZE(4) + JSON_OBJECT_SIZE(5) + 300;
 DynamicJsonDocument doc(capacity);
@@ -35,7 +38,7 @@ void setup() {
   // Serial debugger
   Serial.begin(115200);
   Serial.println();
-
+  
   // Setting up the display
   P.begin();
   P.setIntensity(1);
@@ -64,6 +67,40 @@ void setup() {
   Serial.println(WiFi.localIP());
   Serial.println("");
 
+// Synchronising Time (GMT+1)
+    configTime(timezone * 3600, 0, "pool.ntp.org", "time.nist.gov");
+// DST function to be done and recalled
+
+  Serial.print("Waiting for NTP time sync: ");
+  time_t now = time(nullptr);
+  while (now < 8 * 3600 * 2) {
+    delay(500);
+    Serial.print(".");
+    now = time(nullptr);
+  }
+  Serial.println("");
+  struct tm timeinfo;
+  struct tm timeLocal;
+  gmtime_r(&now, &timeinfo);
+  localtime_r(&now, &timeLocal);
+  Serial.print("Zulu Time: ");
+  Serial.print(asctime(&timeinfo));
+  Serial.print("Local Time :");
+  Serial.print(asctime(&timeLocal));
+
+  // Printing local Time (DST to be implemented)
+  String minutes = String(String(timeLocal.tm_min));
+  Serial.println(minutes.length());
+  if(!(minutes.length() > 1)){
+    minutes = String("0" + minutes);
+    }
+  String timeString = String(String("") + timeLocal.tm_hour + ":" + minutes);
+  wipeScreen();
+  printSubroutine(String("Clock:  "), PA_CENTER, PA_SCROLL_LEFT); 
+  printSubroutine(timeString, PA_CENTER, PA_SCROLL_LEFT);
+  // Print the clock during 5 seconds
+  delay(5000);
+  
   // Wiping screen before getting subscriber count
   wipeScreen();
 }
@@ -91,8 +128,10 @@ String getSubscriberCount() {
 String performApiCall() {
   // Instancing a SSL Client
   BearSSL::WiFiClientSecure client;
-  // Ignoring certificate for now (connection is secure but identity not guaranteed)
-  client.setInsecure();
+  // 
+  client.setTrustAnchors(&cert);
+  // Uncomment following if you've got issues validating the cert (should be okay)
+  //client.setInsecure();
 
   // Creating an HTTPClient to perform the requests
   HTTPClient https;
@@ -139,7 +178,7 @@ void printHandler(String rawCount) {
   // Every payload starting with "error-" will be handled as errors
   if (rawCount.startsWith("error-")) {
     String errorCode = rawCount.substring(6);
-    printSubroutine(errorCode);
+    printSubroutine(errorCode, PA_RIGHT, PA_SCROLL_RIGHT);
   }
   else {
     long fetchedSubCountInteger = rawCount.toInt();
@@ -147,7 +186,7 @@ void printHandler(String rawCount) {
       subscriberCount = fetchedSubCountInteger; // COMMENT FOR DEBUG
       Serial.printf("Subscriber count is : %d\n", fetchedSubCountInteger);
       String formattedString = formatSubscriberCount(subscriberCount); // Formatting function
-      printSubroutine(formattedString); //Display function
+      printSubroutine(formattedString, PA_RIGHT, PA_SCROLL_RIGHT); //Display function
     }
     else {
       Serial.println("Same subscriber count - skipping");
@@ -155,8 +194,8 @@ void printHandler(String rawCount) {
   }
 }
 
-void printSubroutine(String stringToPrint) {
-  P.displayText(stringToPrint.c_str(), PA_RIGHT, 50, 50, PA_SCROLL_RIGHT);
+void printSubroutine(String stringToPrint, textPosition_t textAlignment, textEffect_t effectDirection) {
+  P.displayText(stringToPrint.c_str(), textAlignment, 50, 50, effectDirection);
   P.displayReset();
   while (!P.displayAnimate()) {
     ESP.wdtFeed(); // Feeding the Watchdog to avoid soft reset
@@ -248,4 +287,9 @@ void wifiErrorHandler() {
     printHandler("error-Passwd");
     delay(30000);
   }
+}
+
+// Takes a dateTime and checks for the date (Europe DST)
+bool daylightSavingChecker(tm dateTime){
+  
 }

@@ -36,6 +36,14 @@ __*Total BOM : 17.8€ + enclosure*__
         String ssid = "WIFI_SSID_TO_CONNECT_TO";
         String wifiPass = "WPA||WPA2__KEY";
         long refreshMillis = ;            // Refresh time in milliseconds
+        const char trustRoot[] PROGMEM = R"EOF(
+                -----BEGIN CERTIFICATE-----
+                THE_GOOGLE_API_CERTIFICATE
+                -----END CERTIFICATE-----
+                )EOF";
+        // Caution, you must begin and end the String with R"EOF( )EOF" as shown;
+        // To find the valid certificate just fetch anything at https://www.googleapis.com/ and click the lock next to the URL
+        // Take the X509 Certificate and not SHA1 or SHA256 signature as they expires eventually
 
         String apiCall = String("https://www.googleapis.com/youtube/v3/channels?part=statistics&id=" + channelId + "&key=" + apiKey);
 
@@ -75,15 +83,14 @@ __WiFi related error codes__
 
 __API Related error codes__
 
-- HTTPS : Can't establish https tunnel (shouldn't happen)
+- HTTPS : Can't establish https tunnel (verify your X509 certificate)
 - APIKey : Bad Request code received from the YT API, most likely related to a bad API Private key
 - err"xxx" : Generic error handler, displays the response code from the server
 - channel : No channel exists with the ID provided in config.h
 
 ### WIP
 
-- X509 certificate verification instead of client.setInsecure() call
-- Clock display?
+- Clock Mode?
 - Mode pushbutton (views-subs-clock)
 - LED intensity potentiometer
 
