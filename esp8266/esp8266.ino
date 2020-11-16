@@ -38,7 +38,7 @@ void setup() {
   // Serial debugger
   Serial.begin(115200);
   Serial.println();
-  
+
   // Setting up the display
   P.begin();
   P.setIntensity(1);
@@ -67,9 +67,9 @@ void setup() {
   Serial.println(WiFi.localIP());
   Serial.println("");
 
-// Synchronising Time (GMT+1)
-    configTime(timezone * 3600, 0, "pool.ntp.org", "time.nist.gov");
-// DST function to be done and recalled
+  // Synchronising Time (GMT+1)
+  configTime(timezone * 3600, 0, "pool.ntp.org", "time.nist.gov");
+  // DST function to be done and recalled
 
   Serial.print("Waiting for NTP time sync: ");
   time_t now = time(nullptr);
@@ -91,16 +91,16 @@ void setup() {
   // Printing local Time (DST to be implemented)
   String minutes = String(String(timeLocal.tm_min));
   Serial.println(minutes.length());
-  if(!(minutes.length() > 1)){
+  if (!(minutes.length() > 1)) {
     minutes = String("0" + minutes);
-    }
+  }
   String timeString = String(String("") + timeLocal.tm_hour + ":" + minutes);
   wipeScreen();
-  printSubroutine(String("Clock:  "), PA_CENTER, PA_SCROLL_LEFT); 
+  printSubroutine(String("Clock:  "), PA_CENTER, PA_SCROLL_LEFT);
   printSubroutine(timeString, PA_CENTER, PA_SCROLL_LEFT);
   // Print the clock during 5 seconds
   delay(5000);
-  
+
   // Wiping screen before getting subscriber count
   wipeScreen();
 }
@@ -111,7 +111,7 @@ void loop() {
     printHandler(getSubscriberCount());
     delay(refreshMillis); // To be changed to millis() comparison subroutine
   }
-// TBI : Mode change handler
+  // TBI : Mode change handler
 }
 
 String getSubscriberCount() {
@@ -128,10 +128,10 @@ String getSubscriberCount() {
 String performApiCall() {
   // Instancing a SSL Client
   BearSSL::WiFiClientSecure client;
-  // 
-  client.setTrustAnchors(&cert);
+  //
+  //client.setTrustAnchors(&cert);
   // Uncomment following if you've got issues validating the cert (should be okay)
-  //client.setInsecure();
+  client.setInsecure();
 
   // Creating an HTTPClient to perform the requests
   HTTPClient https;
@@ -160,11 +160,14 @@ String performApiCall() {
       }
       else {
         Serial.printf("[HTTPS] GET... failed, error: %d\n", httpCode);
+        subscriberCount = 0;
         return String("error-err" + String(httpCode));
       }
     } else {
       Serial.printf("[HTTPS] GET... failed, error: %d\n", httpCode);
+      subscriberCount = 0;
       return String("error-err" + String(httpCode));
+
     }
 
     https.end();
@@ -290,6 +293,6 @@ void wifiErrorHandler() {
 }
 
 // Takes a dateTime and checks for the date (Europe DST)
-bool daylightSavingChecker(tm dateTime){
-  
+bool daylightSavingChecker(tm dateTime) {
+
 }
